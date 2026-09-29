@@ -34,6 +34,17 @@ state = Ctx()
 FORCE = typer.Option(False, "--force", "-f", help="Re-screen even if already in results.csv")
 
 
+def load_dotenv(path: Path = Path(".env")) -> None:
+    """Minimal .env support: KEY=VALUE lines; never overrides variables already set."""
+    import os
+    if not path.exists():
+        return
+    for line in path.read_text().splitlines():
+        key, sep, value = line.strip().partition("=")
+        if sep and key and not key.startswith("#"):
+            os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
 @app.callback()
 def main(
     config: Path = typer.Option(DEFAULT_CONFIG, "--config", "-c", help="Path to config.yaml"),
@@ -42,6 +53,7 @@ def main(
     lookup: bool = typer.Option(True, "--lookup/--no-lookup", help="Look up funding stage / AI focus via web search"),
     tailor: bool = typer.Option(True, "--tailor/--no-tailor", help="Generate resume bullets + cover letter points for Apply results"),
 ):
+    load_dotenv()
     state.config, state.resume, state.dry_run = config, resume, dry_run
     state.lookup, state.tailor = lookup, tailor
 
@@ -174,3 +186,17 @@ def results(
         report.console.print("No results yet. Screen something first, e.g. `python -m screener batch samples/postings`.")
         return
     report.print_rows(rows, sort, limit)
+
+
+@app.command()
+def export(out: Path = typer.Option(Path("data/results.html"), "--out", "-o", help="Where to write the HTML file")):
+    """Write results.csv to a self-contained HTML page with a sortable, filterable table."""
+    from .html_report import export_html
+    cfg = get_config()
+    rows = ResultStore(cfg.resolve(cfg.storage.results_csv)).rows
+    if not rows:
+        _fail("No results to export yet.")
+    if state.dry_run and out == Path("data/results.html"):
+        out = Path("data/dry_run/results.html")
+    path = export_html(rows, out)
+    report.console.print(f"Wrote {len(rows)} results to {path.resolve()} — open it in your browser.")

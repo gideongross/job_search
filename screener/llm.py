@@ -66,8 +66,11 @@ class LLM:
                 resp = self.client.beta.messages.parse(messages=messages, **kwargs)
                 if resp.stop_reason != "pause_turn":
                     break
-                # Server-side tool loop (web search) paused; resend to let it resume.
-                messages = [messages[0], {"role": "assistant", "content": resp.content}]
+                # Server-side tool loop (web search) paused; resend to let it resume. Drop the
+                # SDK-only `parsed_output` field so the blocks are valid request params.
+                content = [{k: v for k, v in b.model_dump(exclude_none=True).items() if k != "parsed_output"}
+                           for b in resp.content]
+                messages = [messages[0], {"role": "assistant", "content": content}]
         except anthropic.AuthenticationError as e:
             raise LLMError(f"Authentication failed — check ANTHROPIC_API_KEY ({e.message})") from e
         except anthropic.RateLimitError as e:
