@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Literal
 
 import yaml
 from pydantic import BaseModel, Field
@@ -109,6 +110,24 @@ class Fetch(BaseModel):
     user_agent: str = "job-search-screener/0.1"
 
 
+class WatchCompany(BaseModel):
+    name: str
+    ats: Literal["greenhouse", "lever", "ashby"]
+    slug: str
+
+
+class Watch(BaseModel):
+    companies: list[WatchCompany] = []
+    # Titles match if they contain a target role, title variant, or one of these.
+    extra_title_keywords: list[str] = []
+    # Titles containing these are skipped (profile.technical_title_patterns are skipped too).
+    exclude_title_keywords: list[str] = []
+    # Skip jobs whose listed locations don't mention an accepted location (jobs with none are kept).
+    require_location_match: bool = True
+    # Cap on new postings screened per run, to bound API cost.
+    max_new_per_run: int = 25
+
+
 class Storage(BaseModel):
     results_csv: Path = Path("data/results.csv")
     company_cache: Path = Path("data/companies.json")
@@ -123,6 +142,7 @@ class Config(BaseModel):
     llm: LLMConfig = LLMConfig()
     company_lookup: CompanyLookup = CompanyLookup()
     fetch: Fetch = Fetch()
+    watch: Watch = Watch()
     storage: Storage = Storage()
     # Set at load time: directory of the config file, used to resolve relative paths.
     base_dir: Path = Field(default=Path("."), exclude=True)

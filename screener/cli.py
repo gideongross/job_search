@@ -90,7 +90,7 @@ def _print_duplicate(o: Outcome) -> None:
                          f"({d['recommendation']}{score}). Use --force to re-screen.[/]")
 
 
-def _run(postings: list[Posting], force: bool, detail: bool) -> None:
+def _run(postings: list[Posting], force: bool, detail: bool) -> list:
     cfg = get_config()
     try:
         screener = build_screener(cfg)
@@ -124,6 +124,7 @@ def _run(postings: list[Posting], force: bool, detail: bool) -> None:
             report.console.print(f"[green]✎ Tailoring for {r.extraction.company}: {path}[/]")
     if errors and not results:
         raise typer.Exit(1)
+    return results
 
 
 @app.command()
@@ -169,6 +170,56 @@ def batch(path: Path = typer.Argument(..., exists=True, help="A CSV file or a fo
     except (OSError, ValueError) as e:
         _fail(str(e))
     _run(postings, force, detail)
+
+
+@app.command()
+def watch(email: Optional[str] = typer.Option(None, "--email", help="Email the digest and CSVs to this address"),
+          digest_dir: Path = typer.Option(Path("data/digest"), "--digest-dir", help="Where to write the CSVs")):
+    """Check the job boards in config.yaml `watch`, screen new matching roles, optionally email a digest."""
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    from . import boards, notify
+    from .store import url_key
+
+    cfg = get_config()
+    if not cfg.watch.companies:
+        _fail("No companies to watch. Add some under `watch.companies` in config.yaml.")
+    store = ResultStore(cfg.resolve(cfg.storage.results_csv))
+    jobs, board_errors = boards.find_jobs(cfg)
+    for e in board_errors:
+        report.console.print(f"[yellow]⚠ {e}[/]")
+    new = [j for j in jobs if not store.find(url=j.url)]
+    report.console.print(f"{len(jobs)} matching role(s) on {len(cfg.watch.companies)} board(s); {len(new)} new.")
+    if len(new) > cfg.watch.max_new_per_run:
+        report.console.print(f"[yellow]Screening the first {cfg.watch.max_new_per_run} (watch.max_new_per_run); "
+                             "the rest will be picked up next run.[/]")
+        new = new[:cfg.watch.max_new_per_run]
+
+    screened = _run([j.to_posting() for j in new], force=False, detail=False) if new else []
+    keys = {url_key(r.posting.url) for r in screened}
+    all_rows = ResultStore(store.path).rows
+    new_rows = [r for r in all_rows if r["url_key"] in keys]
+
+    if state.dry_run and digest_dir == Path("data/digest"):
+        digest_dir = Path("data/dry_run/digest")
+    now = datetime.now(ZoneInfo("America/New_York"))
+    stamp = now.strftime("%Y-%m-%d-%H%M")
+    digest = cfg.resolve(digest_dir)
+    new_csv = notify.write_csv(new_rows, digest / f"new-postings-{stamp}.csv")
+    all_csv = notify.write_csv(all_rows, digest / f"all-results-{stamp}.csv")
+    report.console.print(f"Wrote {new_csv} and {all_csv}")
+
+    if email:
+        counts = {rec: sum(r["recommendation"] == rec for r in new_rows) for rec in ("Apply", "Maybe")}
+        subject = (f"Job screener {now:%b %-d %-I%p}: {counts['Apply']} Apply, {counts['Maybe']} Maybe "
+                   f"({len(new_rows)} new)")
+        try:
+            notify.send_email(email, subject, notify.digest_body(new_rows, len(all_rows), board_errors),
+                              [new_csv, all_csv])
+        except (OSError, RuntimeError) as e:  # smtplib.SMTPException is an OSError
+            _fail(f"Couldn't send email: {e}")
+        report.console.print(f"[green]Emailed digest to {email}[/]")
 
 
 @app.command()

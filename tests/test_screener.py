@@ -187,3 +187,79 @@ def test_dry_run_batch_end_to_end(tmp_path):
 
     again = runner.invoke(app, [*args, "batch", str(ROOT / "samples/postings.csv")])
     assert again.output.count("Already screened") == 6
+
+
+# ---------- job boards + email digest ----------
+
+def test_board_parsers():
+    from screener.boards import parse_ashby, parse_greenhouse, parse_lever
+    [g] = parse_greenhouse("Acme", {"jobs": [{
+        "title": "BizOps Lead", "location": {"name": "New York, NY"}, "absolute_url": "https://gh/1",
+        "content": "&lt;p&gt;We build AI for factories.&lt;/p&gt;"}]})
+    assert (g.title, g.locations, g.url) == ("BizOps Lead", ["New York, NY"], "https://gh/1")
+    assert "AI for factories" in g.text and g.text.startswith("Acme")
+    [l] = parse_lever("Acme", [{
+        "text": "Deployment Strategist", "hostedUrl": "https://lever/1", "descriptionPlain": "Deploy AI.",
+        "categories": {"location": "New York, NY", "allLocations": ["New York, NY", "London"]},
+        "lists": [{"text": "Requirements", "content": "<li>3+ years</li>"}]}])
+    assert l.locations == ["New York, NY", "London"] and "3+ years" in l.text
+    jobs = parse_ashby("Acme", {"jobs": [
+        {"title": "Strategy & Ops", "location": "Remote", "secondaryLocations": [{"location": "New York"}],
+         "jobUrl": "https://ashby/1", "descriptionPlain": "Ops.", "isListed": True,
+         "compensation": {"compensationTierSummary": "$150K – $190K"}},
+        {"title": "Hidden", "jobUrl": "https://ashby/2", "isListed": False}]})
+    assert [j.title for j in jobs] == ["Strategy & Ops"]
+    assert jobs[0].locations == ["Remote", "New York"] and "$150K" in jobs[0].text
+
+
+@pytest.mark.parametrize("title,match", [
+    ("Deployment Strategist, Commercial", True),
+    ("Strategy and Operations Manager", True),       # "and" == "&"
+    ("Senior BizOps Lead", True),
+    ("Forward Deployed Engineer", False),            # technical_title_patterns
+    ("Business Operations Intern", False),           # exclude_title_keywords
+    ("Account Executive", False),
+])
+def test_title_matches(cfg, title, match):
+    from screener.boards import title_matches
+    assert title_matches(cfg, title) is match
+
+
+def test_location_prefilter(cfg):
+    from screener.boards import location_matches
+    assert location_matches(cfg, ["San Francisco, CA", "New York, NY"])
+    assert location_matches(cfg, [])                 # unknown: let the real rule decide
+    assert not location_matches(cfg, ["Remote - US"])
+
+
+def test_watch_screens_new_jobs_and_emails(tmp_path, monkeypatch):
+    from screener import boards, notify
+    from screener.boards import BoardJob
+    shutil.copy(ROOT / "config.yaml", tmp_path / "config.yaml")
+    jobs = [BoardJob("Halden Systems", "Deployment Strategist", ["New York, NY"], "https://x/halden",
+                     (ROOT / "samples/postings/01_halden_deployment_strategist.txt").read_text(),
+                     fixture_key="01_halden_deployment_strategist"),
+            BoardJob("Arbiter AI", "Strategic Initiatives Manager", [], "https://x/arbiter",
+                     (ROOT / "samples/postings/04_arbiter_remote_initiatives.txt").read_text(),
+                     fixture_key="04_arbiter_remote_initiatives")]
+    monkeypatch.setattr(boards, "find_jobs", lambda cfg: (jobs, ["Nope (lever/nope): 404"]))
+    sent = []
+    monkeypatch.setattr(notify, "send_email", lambda *a: sent.append(a))
+    args = ["--config", str(tmp_path / "config.yaml"), "--dry-run",
+            "--resume", str(ROOT / "samples/sample_resume.md")]
+    runner = CliRunner()
+
+    r = runner.invoke(app, [*args, "watch", "--email", "me@example.com"])
+    assert r.exit_code == 0, r.output
+    [(to, subject, body, files)] = sent
+    assert to == "me@example.com" and "1 Apply" in subject and "(2 new)" in subject
+    assert "Deployment Strategist at Halden Systems" in body and "Nope (lever/nope)" in body
+    new_rows = list(csv.DictReader(open(files[0])))
+    assert [row["recommendation"] for row in new_rows] == ["Apply", "Skip"]    # sorted
+    assert "url_key" not in new_rows[0]
+
+    sent.clear()
+    r = runner.invoke(app, [*args, "watch", "--email", "me@example.com"])      # nothing new second time
+    assert r.exit_code == 0, r.output
+    [(_, subject, _, files)] = sent
+    assert "(0 new)" in subject and len(list(csv.DictReader(open(files[1])))) == 2

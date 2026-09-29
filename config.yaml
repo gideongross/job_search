@@ -105,6 +105,28 @@ fetch:
   timeout_seconds: 20
   user_agent: "job-search-screener/0.1 (personal job search tool)"
 
+# Job boards the scheduled run (`python -m screener watch`) checks for new roles.
+# ats is greenhouse | lever | ashby; slug is the company's board name in the careers-page URL:
+#   boards.greenhouse.io/<slug>, jobs.lever.co/<slug>, jobs.ashbyhq.com/<slug>
+# Starter list: edit freely. A wrong slug just shows up as a warning in the email.
+watch:
+  companies:
+    - {name: Anthropic, ats: greenhouse, slug: anthropic}
+    - {name: OpenAI, ats: ashby, slug: openai}
+    - {name: Palantir, ats: lever, slug: palantir}
+    - {name: Scale AI, ats: greenhouse, slug: scaleai}
+    - {name: Anduril, ats: greenhouse, slug: andurilindustries}
+    - {name: Databricks, ats: greenhouse, slug: databricks}
+    - {name: Glean, ats: greenhouse, slug: gleanwork}
+    - {name: Cohere, ats: ashby, slug: cohere}
+    - {name: Harvey, ats: ashby, slug: harvey}
+    - {name: Shield AI, ats: lever, slug: shieldai}
+  # Matching titles: anything containing a target role or title variant above, plus these.
+  extra_title_keywords: [Strategic Operations, Deployment Strategy]
+  exclude_title_keywords: [Intern]
+  require_location_match: true   # skip roles whose listed locations don't include NYC
+  max_new_per_run: 25            # cap on new postings screened per run (API cost)
+
 storage:
   results_csv: ./data/results.csv
   company_cache: ./data/companies.json

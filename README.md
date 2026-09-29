@@ -110,6 +110,24 @@ runs in the Actions cache, so postings you've already screened are skipped unles
 "Re-screen". The cache is evicted after 7 days without a run, which resets your history on GitHub.
 LinkedIn, Indeed and similar links can't be fetched; use a Greenhouse, Lever or company careers link.
 
+### Daily email digest
+
+`.github/workflows/daily.yml` runs at 7 AM and 5 PM New York time. It checks the job boards listed
+under `watch.companies` in `config.yaml` (Greenhouse, Lever and Ashby), keeps roles whose titles
+match your target roles and whose locations include NYC, screens the ones it hasn't seen, and emails
+you two CSVs: the new postings from this run and all results so far. Apply and Maybe roles are also
+listed in the email body.
+
+Add these secrets alongside the ones above:
+- `SMTP_USERNAME`: the Gmail address that sends the email
+- `SMTP_PASSWORD`: a Gmail [app password](https://myaccount.google.com/apppasswords) for that
+  account (requires 2-Step Verification). Your normal Gmail password won't work.
+- `EMAIL_TO`: where to send it. Optional; defaults to `SMTP_USERNAME`.
+
+To send a digest right away, use Actions → **Daily job digest** → **Run workflow**. Locally, the
+same thing is `python -m screener watch --email you@example.com`. Scheduled runs can start a few
+minutes late when GitHub is busy.
+
 ## How screening works
 
 ### Hard filters (reject only if clearly failed)
@@ -167,7 +185,9 @@ python -m pytest -q     # offline: filters, scoring, dedupe, ingest parsing, dry
 
 ```
 screener/
-  cli.py          commands: text, url, batch, results, export
+  cli.py          commands: text, url, batch, watch, results, export
+  boards.py       Greenhouse / Lever / Ashby board listing, title + location pre-filter
+  notify.py       digest CSVs and SMTP email
   config.py       loads/validates config.yaml
   ingest.py       text / file / folder / CSV / URL → Posting (blocklist, robots.txt, ATS APIs)
   llm.py          Claude API structured-output wrapper; DryRunLLM replays samples/fixtures/

@@ -1,0 +1,125 @@
+# Twice-daily digest: check the job boards in config.yaml `watch`, screen new matching roles,
+# and email the results as CSV at 7 AM and 5 PM New York time.
+#
+# Secrets (Settings -> Secrets and variables -> Actions), in addition to those in screen.yml:
+#   SMTP_USERNAME  the Gmail address that sends the email
+#   SMTP_PASSWORD  a Gmail app password for it (myaccount.google.com/apppasswords; needs 2-Step Verification)
+#   EMAIL_TO       where to send the digest (optional; defaults to SMTP_USERNAME)
+name: Daily job digest
+
+on:
+  schedule:
+    # GitHub cron is UTC and ignores daylight saving, so each time has an EDT and an EST entry;
+    # the gate job below runs only the one that matches today. Ten minutes early to land on time.
+    - cron: "50 10 * * *"   # 6:50 AM EDT
+    - cron: "50 11 * * *"   # 6:50 AM EST
+    - cron: "50 20 * * *"   # 4:50 PM EDT
+    - cron: "50 21 * * *"   # 4:50 PM EST
+  workflow_dispatch:        # "Run workflow" button: send a digest now
+
+permissions:
+  contents: read
+
+concurrency:
+  group: screen-job-postings   # shared with screen.yml: both use results.csv
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+      - id: check
+        env:
+          EVENT: ${{ github.event_name }}
+          CRON: ${{ github.event.schedule }}
+        run: |
+          python3 - <<'EOF' >> "$GITHUB_OUTPUT"
+          import os
+          from datetime import datetime
+          from zoneinfo import ZoneInfo
+          if os.environ["EVENT"] != "schedule":
+              print("run=true")
+          else:
+              dst = bool(datetime.now(ZoneInfo("America/New_York")).dst())
+              edt_crons = {"50 10 * * *", "50 20 * * *"}
+              print(f"run={str((os.environ['CRON'] in edt_crons) == dst).lower()}")
+          EOF
+
+  digest:
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      COLUMNS: "160"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Write resume from secrets
+        env:
+          RESUME_TEXT: ${{ secrets.RESUME_TEXT }}
+          RESUME_B64: ${{ secrets.RESUME_B64 }}
+        run: |
+          mkdir -p private
+          if [ -n "$RESUME_TEXT" ]; then
+            printf '%s\n' "$RESUME_TEXT" > private/resume.md
+            echo "RESUME=private/resume.md" >> "$GITHUB_ENV"
+          elif [ -n "$RESUME_B64" ]; then
+            printf '%s' "$RESUME_B64" | base64 -d > private/resume.bin
+            case "$(head -c 4 private/resume.bin)" in
+              %PDF) ext=pdf ;;
+              PK*)  ext=docx ;;
+              *)    ext=txt ;;
+            esac
+            mv private/resume.bin "private/resume.$ext"
+            echo "RESUME=private/resume.$ext" >> "$GITHUB_ENV"
+          else
+            echo "::error::Add a RESUME_TEXT (or RESUME_B64) repository secret first."
+            exit 1
+          fi
+
+      - name: Restore previous results
+        uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: screener-data-${{ github.run_id }}
+          restore-keys: screener-data-
+
+      - name: Check job boards, screen new roles, email digest
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+        run: |
+          for s in ANTHROPIC_API_KEY SMTP_USERNAME SMTP_PASSWORD; do
+            [ -n "${!s}" ] || { echo "::error::Add a $s repository secret first."; exit 1; }
+          done
+          python -m screener --resume "$RESUME" watch --email "${EMAIL_TO:-$SMTP_USERNAME}"
+
+      - name: Save results for next run
+        if: always() && hashFiles('data/results.csv') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: data
+          key: screener-data-${{ github.run_id }}
+
+      - name: Upload digest
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: job-digest
+          path: |
+            data/digest/
+            data/tailoring/
+          if-no-files-found: ignore
+          retention-days: 30
