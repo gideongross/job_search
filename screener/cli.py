@@ -13,7 +13,7 @@ from .llm import LLM, DryRunLLM, LLMError
 from .models import Posting
 from .pipeline import Outcome, Screener
 from .resume import load_resume
-from .store import ResultStore
+from .store import ResultStore, save_tailoring
 
 app = typer.Typer(add_completion=False, no_args_is_help=True,
                   help="Screen job postings against your background and preferences.")
@@ -26,6 +26,7 @@ class Ctx:
     resume: Optional[Path] = None
     dry_run: bool = False
     lookup: bool = True
+    tailor: bool = True
 
 
 state = Ctx()
@@ -39,8 +40,10 @@ def main(
     resume: Optional[Path] = typer.Option(None, "--resume", "-r", help="Override profile.resume_path"),
     dry_run: bool = typer.Option(False, "--dry-run", help="Use canned responses for the bundled samples (no API calls)"),
     lookup: bool = typer.Option(True, "--lookup/--no-lookup", help="Look up funding stage / AI focus via web search"),
+    tailor: bool = typer.Option(True, "--tailor/--no-tailor", help="Generate resume bullets + cover letter points for Apply results"),
 ):
-    state.config, state.resume, state.dry_run, state.lookup = config, resume, dry_run, lookup
+    state.config, state.resume, state.dry_run = config, resume, dry_run
+    state.lookup, state.tailor = lookup, tailor
 
 
 def get_config():
@@ -60,7 +63,7 @@ def get_config():
 def build_screener(cfg) -> Screener:
     resume_text = load_resume(state.resume or cfg.resolve(cfg.profile.resume_path))
     llm = DryRunLLM(FIXTURES_DIR) if state.dry_run else LLM(cfg.llm)
-    return Screener(cfg, llm, resume_text, lookup=state.lookup)
+    return Screener(cfg, llm, resume_text, lookup=state.lookup, tailor=state.tailor)
 
 
 def _fail(msg: str) -> None:
@@ -104,6 +107,9 @@ def _run(postings: list[Posting], force: bool, detail: bool) -> None:
         report.console.print(f"[red]✘ {source}:[/] {err}")
     if results:
         report.console.print(f"[dim]Saved {len(results)} result(s) to {store.path}[/]")
+    for r in results:
+        if path := save_tailoring(r, cfg.resolve(cfg.storage.tailoring_dir)):
+            report.console.print(f"[green]✎ Tailoring for {r.extraction.company}: {path}[/]")
     if errors and not results:
         raise typer.Exit(1)
 

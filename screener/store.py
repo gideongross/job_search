@@ -108,3 +108,22 @@ class ResultStore:
             w.writeheader()
             w.writerows(self.rows)
         tmp.replace(self.path)
+
+
+def save_tailoring(r: ScreenResult, folder: Path) -> Path | None:
+    """Write resume bullets and cover-letter points for an Apply result to a Markdown file."""
+    if not r.tailoring:
+        return None
+    ex = r.extraction
+    slug = re.sub(r"[^a-z0-9]+", "-", f"{ex.company} {ex.title}".lower()).strip("-")
+    folder.mkdir(parents=True, exist_ok=True)
+    path = folder / f"{slug}.md"
+    lines = [f"# {ex.title} — {ex.company}", "",
+             f"Score {r.score}/100 · screened {datetime.now():%Y-%m-%d}" + (f" · {r.posting.url}" if r.posting.url else ""),
+             "", r.fit.explanation if r.fit else "", "",
+             "## Tailored resume bullets", *[f"- {b}" for b in r.tailoring.resume_bullets], "",
+             "## Cover letter talking points", *[f"- {p}" for p in r.tailoring.cover_letter_points], ""]
+    if r.fit and r.fit.gaps:
+        lines += ["## Gaps to prepare for", *[f"- {g}" for g in r.fit.gaps], ""]
+    path.write_text("\n".join(lines), encoding="utf-8")
+    return path

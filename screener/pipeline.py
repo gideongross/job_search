@@ -8,7 +8,7 @@ from . import prompts
 from .company import CompanyResolver, company_from_posting, needs_lookup
 from .config import Config
 from .filters import run_filters
-from .models import Extraction, FitAssessment, Posting, ScreenResult
+from .models import Extraction, FitAssessment, Posting, ScreenResult, Tailoring
 from .scoring import recommend, total_score
 from .store import ResultStore, company_title_key
 
@@ -23,9 +23,10 @@ class Outcome:
 
 
 class Screener:
-    def __init__(self, cfg: Config, llm, resume_text: str, lookup: bool = True):
+    def __init__(self, cfg: Config, llm, resume_text: str, lookup: bool = True, tailor: bool = True):
         self.cfg = cfg
         self.llm = llm
+        self.tailor_enabled = tailor
         self.lookup_enabled = lookup and cfg.company_lookup.enabled
         self.companies = CompanyResolver(cfg.company_lookup, llm, cfg.resolve(cfg.storage.company_cache))
         self.extract_system = prompts.extraction_system(cfg)
@@ -58,12 +59,17 @@ class Screener:
                                  schema=FitAssessment, fixture_key=posting.fixture_key)
             score, bonus = total_score(self.cfg, fit)
 
-        return ScreenResult(
+        result = ScreenResult(
             key=posting.url or company_title_key(ex.company, ex.title),
             posting=posting, extraction=ex, company=company, filters=filters, flags=flags,
             fit=fit, sector_bonus=bonus, score=score,
             recommendation=recommend(self.cfg, score, passed),
         )
+        if result.recommendation == "Apply" and self.tailor_enabled:
+            result.tailoring = self.llm.parse(task="tailor", system=self.candidate_system,
+                                              user=prompts.tailoring_user(posting.text, ex, fit),
+                                              schema=Tailoring, fixture_key=posting.fixture_key)
+        return result
 
     def process(self, posting: Posting, store: ResultStore, force: bool = False) -> Outcome:
         """Screen a posting unless it was already screened; save the result."""
