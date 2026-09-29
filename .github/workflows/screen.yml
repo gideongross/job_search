@@ -1,0 +1,142 @@
+# Screen job postings from GitHub: Actions tab -> "Screen job postings" -> Run workflow.
+#
+# One-time setup (Settings -> Secrets and variables -> Actions -> New repository secret):
+#   ANTHROPIC_API_KEY  your Claude API key
+#   RESUME_TEXT        your resume pasted as plain text or Markdown (recommended), or
+#   RESUME_B64         a base64-encoded PDF/DOCX (`base64 -i resume.pdf | pbcopy`); secrets max out at 48 KB
+#
+# Keep this repo private: run logs and the results artifact contain your scores and tailoring.
+name: Screen job postings
+
+on:
+  workflow_dispatch:
+    inputs:
+      urls:
+        description: "Posting URLs, separated by spaces or commas (Greenhouse/Lever work best; not LinkedIn/Indeed)"
+        required: true
+        type: string
+      force:
+        description: "Re-screen postings already in your results"
+        type: boolean
+        default: false
+      lookup:
+        description: "Look up funding stage / AI focus via web search"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: screen-job-postings   # runs share results.csv, so don't overlap them
+  cancel-in-progress: false
+
+jobs:
+  screen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      COLUMNS: "160"           # wider terminal tables in the log
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Write resume from secrets
+        env:
+          RESUME_TEXT: ${{ secrets.RESUME_TEXT }}
+          RESUME_B64: ${{ secrets.RESUME_B64 }}
+        run: |
+          mkdir -p private
+          if [ -n "$RESUME_TEXT" ]; then
+            printf '%s\n' "$RESUME_TEXT" > private/resume.md
+            echo "RESUME=private/resume.md" >> "$GITHUB_ENV"
+          elif [ -n "$RESUME_B64" ]; then
+            printf '%s' "$RESUME_B64" | base64 -d > private/resume.bin
+            case "$(head -c 4 private/resume.bin)" in
+              %PDF) ext=pdf ;;
+              PK*)  ext=docx ;;
+              *)    ext=txt ;;
+            esac
+            mv private/resume.bin "private/resume.$ext"
+            echo "RESUME=private/resume.$ext" >> "$GITHUB_ENV"
+          else
+            echo "::error::Add a RESUME_TEXT (or RESUME_B64) repository secret first."
+            exit 1
+          fi
+
+      # data/ holds results.csv and the company cache; carry it between runs for dedupe and history.
+      - name: Restore previous results
+        uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: screener-data-${{ github.run_id }}
+          restore-keys: screener-data-
+
+      - name: Screen postings
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          URLS: ${{ inputs.urls }}
+          FORCE: ${{ inputs.force && '--force' || '' }}
+          LOOKUP: ${{ inputs.lookup && '--lookup' || '--no-lookup' }}
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::error::Add an ANTHROPIC_API_KEY repository secret first."
+            exit 1
+          fi
+          failed=0 total=0
+          for link in $(printf '%s' "$URLS" | tr ',' ' '); do
+            total=$((total + 1))
+            echo "::group::$link"
+            python -m screener --resume "$RESUME" $LOOKUP url "$link" $FORCE || { failed=$((failed + 1)); echo "::warning::Couldn't screen $link"; }
+            echo "::endgroup::"
+          done
+          echo "FAILED=$failed" >> "$GITHUB_ENV"
+          [ "$total" -gt 0 ] || { echo "::error::No URLs given."; exit 1; }
+          [ "$failed" -lt "$total" ] || exit 1   # every URL failed
+
+      - name: Export HTML and write summary
+        if: always()
+        run: |
+          [ -f data/results.csv ] || exit 0
+          python -m screener export
+          python - <<'EOF' >> "$GITHUB_STEP_SUMMARY"
+          import csv, os
+          rows = list(csv.DictReader(open("data/results.csv", encoding="utf-8")))
+          order = {"Apply": 0, "Maybe": 1, "Skip": 2}
+          rows.sort(key=lambda r: (order.get(r["recommendation"], 3), -float(r["score"] or 0)))
+          print("## Screening results\n")
+          print("Download the **screening-results** artifact below for the sortable HTML table and tailoring notes.\n")
+          if int(os.environ.get("FAILED", "0")):
+              print(f"> {os.environ['FAILED']} URL(s) couldn't be screened; see the log.\n")
+          print("| Rec | Score | Company | Title | Why | Link |")
+          print("|---|---|---|---|---|---|")
+          for r in rows:
+              why = (r["failed_rules"] or r["explanation"]).replace("|", "/").replace("\n", " ")[:160]
+              link = f"[open]({r['url']})" if r["url"] else ""
+              print(f"| {r['recommendation']} | {r['score'] or '—'} | {r['company']} | {r['title']} | {why} | {link} |")
+          EOF
+
+      - name: Save results for next run
+        if: always() && hashFiles('data/results.csv') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: data
+          key: screener-data-${{ github.run_id }}
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screening-results
+          path: |
+            data/results.html
+            data/results.csv
+            data/tailoring/
+          if-no-files-found: ignore
+          retention-days: 30

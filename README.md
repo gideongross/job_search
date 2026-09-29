@@ -91,6 +91,25 @@ overwrites the row but keeps your `status` and `notes` columns.
 **Tracking applications:** open `data/results.csv` in a spreadsheet and fill in `status`
 (e.g. applied / interviewing / rejected) and `notes`.
 
+## Run it on GitHub
+
+`.github/workflows/screen.yml` runs the screener in GitHub Actions, so you don't need Python locally.
+
+1. **Make the repo private** (Settings → General → Danger Zone). Run logs and results contain your
+   scores and resume-based tailoring.
+2. Add repository secrets (Settings → Secrets and variables → Actions → New repository secret):
+   - `ANTHROPIC_API_KEY`: your Claude API key
+   - `RESUME_TEXT`: your resume pasted as plain text or Markdown. Alternatively, `RESUME_B64` is a
+     base64-encoded PDF/DOCX (`base64 -i resume.pdf`), but secrets are capped at 48 KB.
+3. Actions tab → **Screen job postings** → **Run workflow**, then paste one or more posting URLs
+   separated by spaces or commas.
+
+The run page shows a summary table of everything screened so far. The **screening-results**
+artifact has `results.html`, `results.csv` and the tailoring notes. Results are carried between
+runs in the Actions cache, so postings you've already screened are skipped unless you tick
+"Re-screen". The cache is evicted after 7 days without a run, which resets your history on GitHub.
+LinkedIn, Indeed and similar links can't be fetched; use a Greenhouse, Lever or company careers link.
+
 ## How screening works
 
 ### Hard filters (reject only if clearly failed)
