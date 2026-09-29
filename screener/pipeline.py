@@ -1,7 +1,8 @@
 """End-to-end screening of one posting: extract -> company facts -> hard filters -> fit score."""
 from __future__ import annotations
 
-import re
+from dataclasses import dataclass
+from typing import Optional
 
 from . import prompts
 from .company import CompanyResolver, company_from_posting, needs_lookup
@@ -9,13 +10,16 @@ from .config import Config
 from .filters import run_filters
 from .models import Extraction, FitAssessment, Posting, ScreenResult
 from .scoring import recommend, total_score
+from .store import ResultStore, company_title_key
 
 COMPANY_RULES = {"ai_core", "funding_stage"}
 
 
-def company_title_key(company: str, title: str) -> str:
-    norm = lambda s: re.sub(r"[^a-z0-9]+", " ", s.lower()).strip()
-    return f"{norm(company)}|{norm(title)}"
+@dataclass
+class Outcome:
+    posting: Posting
+    result: Optional[ScreenResult] = None
+    duplicate_of: Optional[dict] = None   # existing results.csv row, if skipped as a duplicate
 
 
 class Screener:
@@ -60,3 +64,14 @@ class Screener:
             fit=fit, sector_bonus=bonus, score=score,
             recommendation=recommend(self.cfg, score, passed),
         )
+
+    def process(self, posting: Posting, store: ResultStore, force: bool = False) -> Outcome:
+        """Screen a posting unless it was already screened; save the result."""
+        if not force and (dup := store.find(url=posting.url, text=posting.text)):
+            return Outcome(posting, duplicate_of=dup)
+        ex = self.extract(posting)
+        if not force and (dup := store.find(company=ex.company, title=ex.title)):
+            return Outcome(posting, duplicate_of=dup)
+        result = self.screen(posting, ex)
+        store.upsert(result)
+        return Outcome(posting, result=result)

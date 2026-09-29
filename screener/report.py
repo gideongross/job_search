@@ -85,3 +85,31 @@ def print_detail(r: ScreenResult) -> None:
                   "[bold]Cover letter talking points[/]", *[f"  • {p}" for p in r.tailoring.cover_letter_points]]
     console.print(Panel("\n".join(lines), title=f"[{REC_STYLE[r.recommendation]}]{r.recommendation}[/]",
                         expand=True))
+
+
+def _row_sort_key(sort_by: str):
+    if sort_by == "date":
+        return lambda r: r["screened_at"], True
+    if sort_by == "company":
+        return lambda r: r["company"].lower(), False
+    if sort_by == "salary":
+        return lambda r: int(r["salary_max"] or r["salary_min"] or 0), True
+    return lambda r: (-REC_ORDER.get(r["recommendation"], 3), int(r["score"] or -1)), True
+
+
+def print_rows(rows: list[dict], sort_by: str = "score", limit: int = 50) -> None:
+    """Table of saved results.csv rows."""
+    key, reverse = _row_sort_key(sort_by)
+    rows = sorted(rows, key=key, reverse=reverse)[:limit]
+    t = Table(title=f"Screened postings (sorted by {sort_by})", show_lines=False, expand=True)
+    for col, kw in [("Date", {}), ("Rec", {}), ("Score", {"justify": "right"}), ("Company", {"ratio": 2}),
+                    ("Title", {"ratio": 3}), ("Salary", {}), ("Sectors", {}), ("Status", {}),
+                    ("Failed rule / flags", {"ratio": 4})]:
+        t.add_column(col, **kw)
+    for r in rows:
+        lo, hi = r["salary_min"], r["salary_max"]
+        salary = f"${int(lo or 0) // 1000 or '?'}k–{int(hi or 0) // 1000 or '?'}k" if (lo or hi) else "unknown"
+        note = f"[red]{r['failed_rules']}[/]" if r["failed_rules"] else f"[yellow]{r['flags']}[/]"
+        t.add_row(r["screened_at"][:10], f"[{REC_STYLE.get(r['recommendation'], '')}]{r['recommendation']}[/]",
+                  r["score"] or "—", r["company"], r["title"], salary, r["sectors"], r["status"], note)
+    console.print(t)
