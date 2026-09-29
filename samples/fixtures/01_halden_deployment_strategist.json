@@ -1,0 +1,73 @@
+{
+  "extract": {
+    "title": "Deployment Strategist",
+    "company": "Halden Systems",
+    "company_website": null,
+    "locations": [
+      {
+        "location": "New York, NY",
+        "arrangement": "hybrid"
+      }
+    ],
+    "salary_min": 170000,
+    "salary_max": 210000,
+    "salary_text": "$170,000\u2013$210,000",
+    "seniority": "Senior (5+ years)",
+    "key_requirements": [
+      "5+ years in consulting, strategy & ops, or customer deployment",
+      "Experience with government, defense or industrial customers",
+      "Executive communication",
+      "SQL or spreadsheet analysis a plus",
+      "Ability to obtain a U.S. security clearance"
+    ],
+    "red_flags": [
+      "Travel up to 25%",
+      "Security clearance eligibility required"
+    ],
+    "requires_coding": false,
+    "cs_degree_required": false,
+    "technical_evidence": [
+      "You will not write code",
+      "SQL or spreadsheet analysis is a plus"
+    ],
+    "ai_core": "yes",
+    "ai_evidence": "Halden Systems builds AI software that helps the U.S. defense industrial base",
+    "funding_stage": "series_c",
+    "funding_evidence": "We're a Series C company"
+  },
+  "score": {
+    "role_match": 29,
+    "experience_match": 35,
+    "seniority_fit": 13,
+    "matching_sectors": [
+      "industrial",
+      "govtech"
+    ],
+    "explanation": "Near-ideal match: the role is customer deployment and change management for an AI product sold to defense and industrial customers, which is exactly what the candidate does at Northwind and did in public-sector consulting.",
+    "requirements_met": [
+      "8 years across consulting, S&O and deployment (Northwind, Carrow & Hale)",
+      "Defense/government clients (DoD logistics, state agencies)",
+      "Deployed AI forecasting at 12 enterprise customers",
+      "Executive readouts and QBRs",
+      "SQL dashboards in Snowflake/Looker"
+    ],
+    "gaps": [
+      "No explicit security clearance history",
+      "Proposal/contracting support is lighter than deployment experience"
+    ]
+  },
+  "tailor": {
+    "resume_bullets": [
+      "Led end-to-end deployment of an AI forecasting product at 12 manufacturing, CPG and 3PL customers, owning discovery, success metrics and executive readouts; cut time-to-value from 5 to 3 months.",
+      "Scoped and drove adoption of a supply-chain analytics capability for a DoD logistics client, translating program-office needs into requirements and an acquisition strategy.",
+      "Designed the operating model and vendor governance for a $60M state benefits modernization, aligning agency executives and [X] vendors on a single deployment plan.",
+      "Turned field feedback from [X] customer deployments into a prioritized product roadmap in partnership with product and engineering leaders."
+    ],
+    "cover_letter_points": [
+      "You've already done Halden's job in a commercial setting: deploying an AI forecasting product into manufacturers' supply chains at Northwind.",
+      "Defense supply-chain procurement work at Carrow & Hale means you speak the language of program offices and prime contractors.",
+      "Emphasize comfort partnering with engineers who own integration while you own scoping, change management and exec relationships.",
+      "Address clearance head-on: U.S. citizen, eligible and willing to go through the process (confirm before sending)."
+    ]
+  }
+}

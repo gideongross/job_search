@@ -1,0 +1,68 @@
+{
+  "extract": {
+    "title": "Strategy & Operations Lead",
+    "company": "Ledgerline",
+    "company_website": null,
+    "locations": [
+      {
+        "location": "New York, NY",
+        "arrangement": "hybrid"
+      }
+    ],
+    "salary_min": 165000,
+    "salary_max": 195000,
+    "salary_text": "$165,000 \u2013 $195,000",
+    "seniority": "Senior / Lead (6+ years)",
+    "key_requirements": [
+      "6+ years in strategy consulting, corporate strategy or BizOps",
+      "Financial modeling (Excel/Sheets; SQL a plus)",
+      "Leading cross-functional programs",
+      "Financial services / compliance experience preferred",
+      "Bachelor's degree; MBA or MPP a plus"
+    ],
+    "red_flags": [],
+    "requires_coding": false,
+    "cs_degree_required": false,
+    "technical_evidence": [
+      "Excel/Sheets; SQL a plus"
+    ],
+    "ai_core": "yes",
+    "ai_evidence": "Ledgerline builds AI agents that automate regulatory compliance",
+    "funding_stage": "public",
+    "funding_evidence": "Ledgerline is a publicly traded company"
+  },
+  "score": {
+    "role_match": 28,
+    "experience_match": 30,
+    "seniority_fit": 13,
+    "matching_sectors": [
+      "regtech"
+    ],
+    "explanation": "Strong corporate S&O match: the candidate has built an annual operating plan and QBR cadence and led cross-functional initiatives. The main gap is financial-services domain experience, which is preferred rather than required.",
+    "requirements_met": [
+      "Built annual operating plan and QBR cadence with CEO/CFO at Northwind",
+      "Pricing/packaging initiative (NRR 108% \u2192 117%)",
+      "8 years in consulting and S&O",
+      "MPP (listed as a plus)",
+      "Excel modeling and SQL"
+    ],
+    "gaps": [
+      "No financial services or compliance industry experience",
+      "No board-materials experience shown on resume"
+    ]
+  },
+  "tailor": {
+    "resume_bullets": [
+      "Built Northwind's first annual operating plan and quarterly business review cadence with the CEO and CFO, creating the company's single view of goals and KPIs.",
+      "Led a cross-functional pricing and packaging redesign with Sales, Finance and Product that lifted net revenue retention from 108% to 117%.",
+      "Wrote the business case and operating model for a $60M regulated-benefits system replacement for a state agency client.",
+      "Ran a citywide KPI program across 9 agencies, presenting monthly performance reviews to deputy mayors."
+    ],
+    "cover_letter_points": [
+      "Planning-process ownership at Northwind maps directly to running Ledgerline's annual and quarterly cadence for the COO.",
+      "Regulated-environment experience (state benefits, city government) is a credible bridge to compliance-heavy banking and insurance customers.",
+      "Name the FS gap honestly and show quick domain ramp-up: e.g. learning DoD acquisition rules at Carrow & Hale.",
+      "Show interest in the product: AI agents for regulatory change are a natural next step from AI forecasting deployment."
+    ]
+  }
+}

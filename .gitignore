@@ -1,0 +1,10 @@
+# Secrets and personal files — never commit
+.env
+private/
+data/
+
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+*.egg-info/

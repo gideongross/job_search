@@ -1,0 +1,65 @@
+{
+  "extract": {
+    "title": "Business Operations Manager",
+    "company": "Corvid Freight",
+    "company_website": null,
+    "locations": [
+      {
+        "location": "New York, NY",
+        "arrangement": "onsite"
+      }
+    ],
+    "salary_min": null,
+    "salary_max": null,
+    "salary_text": "Competitive salary",
+    "seniority": "Mid (3\u20135 years)",
+    "key_requirements": [
+      "3\u20135 years in operations, BizOps or consulting",
+      "Strong SQL and Excel",
+      "Operating metrics ownership",
+      "Freight brokerage experience strongly preferred"
+    ],
+    "red_flags": [
+      "Salary not listed despite NYC pay-transparency law",
+      "Evening coverage during peak season",
+      "Scope reads as brokerage-floor operations rather than company strategy",
+      "Level (3\u20135 yrs) may be below candidate"
+    ],
+    "requires_coding": false,
+    "cs_degree_required": false,
+    "technical_evidence": [
+      "Build dashboards and ad-hoc analyses in SQL and Excel"
+    ],
+    "ai_core": "unknown",
+    "ai_evidence": "We use technology and machine learning to price loads and match trucks",
+    "funding_stage": "unknown",
+    "funding_evidence": null
+  },
+  "lookup": {
+    "funding_stage": "series_b",
+    "funding_evidence": "Sample fixture: Corvid Freight announced a Series B (fictional company).",
+    "funding_source_url": "https://example.com/corvid-freight-series-b",
+    "ai_core": "unknown",
+    "ai_evidence": null,
+    "ai_source_url": null,
+    "sectors_hint": "Digital freight brokerage for shippers and carriers"
+  },
+  "score": {
+    "role_match": 18,
+    "experience_match": 24,
+    "seniority_fit": 10,
+    "matching_sectors": [
+      "industrial"
+    ],
+    "explanation": "Relevant logistics context and strong ops/SQL skills, but the role is brokerage-floor operations at a mid level rather than strategy or deployment, and AI's role in the product is unclear.",
+    "requirements_met": [
+      "Logistics domain (Northwind 3PL customers)",
+      "SQL and Excel dashboards",
+      "Operating metrics and exec reporting"
+    ],
+    "gaps": [
+      "No freight brokerage experience",
+      "Role is more tactical and junior than target roles"
+    ]
+  }
+}

@@ -1,0 +1,34 @@
+URL: https://jobs.example.com/halden-systems/deployment-strategist
+Deployment Strategist — Halden Systems
+New York, NY (Hybrid, 3 days/week in our Flatiron office)
+
+About Halden
+Halden Systems builds AI software that helps the U.S. defense industrial base plan production and
+manage supplier risk. Our platform uses machine learning models to forecast part shortages and
+recommend mitigation across thousands of suppliers. We're a Series C company backed by leading
+defense and enterprise investors, working with the Army, Navy and prime contractors.
+
+The role
+Deployment Strategists are the bridge between our customers' hardest operational problems and our
+product. You'll embed with program offices and manufacturing customers, scope their problems, design
+the deployment, and drive adoption with senior stakeholders. You will not write code — you'll work
+alongside our Forward Deployed Engineers, who own the technical integration.
+
+What you'll do
+- Own the end-to-end deployment of Halden at 3–5 customer accounts
+- Run discovery with program managers, supply-chain leads and executives; translate needs into
+  deployment plans and success metrics
+- Lead change management and executive business reviews
+- Feed customer insight to product and help shape the roadmap
+- Support proposal and contracting work for new government programs
+
+What we're looking for
+- 5+ years in management consulting, strategy & operations, or customer deployment roles
+- Experience working with government, defense or industrial customers
+- Excellent written and executive communication
+- Comfort with data: SQL or spreadsheet analysis is a plus
+- Ability to obtain a U.S. security clearance
+
+Compensation
+The base salary range for this role in New York is $170,000–$210,000, plus equity and benefits.
+Travel to customer sites up to 25%.

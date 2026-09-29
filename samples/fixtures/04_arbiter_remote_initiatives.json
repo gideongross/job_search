@@ -1,0 +1,32 @@
+{
+  "extract": {
+    "title": "Strategic Initiatives Manager",
+    "company": "Arbiter AI",
+    "company_website": null,
+    "locations": [
+      {
+        "location": "Remote (United States)",
+        "arrangement": "remote"
+      }
+    ],
+    "salary_min": 160000,
+    "salary_max": 190000,
+    "salary_text": "$160,000 \u2013 $190,000",
+    "seniority": "Manager (5+ years)",
+    "key_requirements": [
+      "5+ years in strategy consulting, S&O or government",
+      "Public sector experience",
+      "Executive writing"
+    ],
+    "red_flags": [
+      "Fully remote; in-person only twice a year"
+    ],
+    "requires_coding": false,
+    "cs_degree_required": false,
+    "technical_evidence": [],
+    "ai_core": "yes",
+    "ai_evidence": "Arbiter AI builds large-language-model software",
+    "funding_stage": "series_b",
+    "funding_evidence": "We're a Series B company"
+  }
+}

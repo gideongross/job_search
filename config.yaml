@@ -1,0 +1,111 @@
+# Job search screener — all preferences live here. Edit freely; no code changes needed.
+
+profile:
+  # Your resume (PDF, DOCX, MD or TXT). Keep it under ./private/ — that folder is gitignored.
+  resume_path: ./private/resume.pdf
+  home_location: New York, NY
+  target_roles:
+    - Forward Deployed Strategist
+    - Deployment Strategist
+    - Corporate Strategy & Operations
+  # Close variants that count as a title match.
+  title_variants:
+    - Strategy & Operations
+    - Strategy and Operations
+    - BizOps
+    - Business Operations
+    - Deployment Strategist
+    - Forward Deployed Operations
+    - Strategic Initiatives
+    - Strategy & Ops
+  # Titles that are mismatches when the role actually requires coding.
+  technical_title_patterns:
+    - Forward Deployed Engineer
+    - Solutions Engineer
+    - Solutions Architect
+    - Software Engineer
+    - Deployment Engineer
+  # Optional: seniority you're targeting (e.g. "Senior / Manager"). Leave blank to let the
+  # scorer infer fit from your resume.
+  target_seniority: ""
+  # Optional: anything the scorer should know that isn't in your resume.
+  background_notes: ""
+
+# Must-haves. A posting that clearly fails any enabled rule is rejected, with the rule shown.
+filters:
+  location:
+    enabled: true
+    # A posting passes if ANY of its listed locations matches one of these (case-insensitive)
+    # with an accepted arrangement. Multi-city postings that include NYC pass.
+    accepted_locations: [New York, NYC, Manhattan, Brooklyn, Queens, Bronx, Staten Island]
+    accepted_arrangements: [hybrid, onsite]
+  salary:
+    enabled: true
+    floor: 140000          # base salary, USD/year
+  ai_core:
+    enabled: true          # company must build or deploy AI as a core part of its product
+  funding_stage:
+    enabled: true
+    rejected_stages: [pre_seed, seed]
+  non_technical:
+    enabled: true
+    reject_if_requires_coding: true
+    reject_if_cs_degree_required: true
+    # Technical skills that are fine to be asked for.
+    allowed_technical_skills: [SQL, Excel, light data analysis, BI / dashboard tools]
+
+# Nice-to-haves: each matching sector adds points to the fit score (capped).
+nice_to_have:
+  points_per_sector: 10
+  max_bonus: 15
+  sectors:
+    industrial:
+      label: Industrial tech
+      description: manufacturing, supply chain, energy, logistics, defense industrial base
+    govtech:
+      label: Government tech
+      description: public sector, federal/state/local government, defense, GovCon
+    regtech:
+      label: Regulatory tech
+      description: compliance, legal/regulatory, risk
+
+scoring:
+  # Max points per component; sector bonus comes from nice_to_have above.
+  weights:
+    role_match: 30         # how well the role itself matches your target roles
+    experience_match: 40   # how well your resume meets the stated requirements
+    seniority_fit: 15      # level/years vs. your experience
+  thresholds:
+    apply: 75              # score >= apply  -> Apply
+    maybe: 55              # score >= maybe  -> Maybe, else Skip
+  # Postings that fail a hard filter are Skip. Set true to still spend an API call scoring them.
+  score_rejected: false
+
+llm:
+  model: claude-sonnet-5-5
+  max_tokens: 16000
+  # Effort per task: low | medium | high | xhigh | max
+  effort:
+    extract: low
+    lookup: low
+    score: medium
+    tailor: medium
+  # On a safety-classifier refusal, let the API retry on a fallback model automatically.
+  refusal_fallback: true
+
+company_lookup:
+  enabled: true
+  web_search_max_uses: 5
+  cache_ttl_days: 30
+
+fetch:
+  # Never fetch from sites whose terms prohibit scraping — paste the text instead.
+  blocked_domains: [linkedin.com, indeed.com, glassdoor.com, ziprecruiter.com, monster.com]
+  respect_robots_txt: true
+  timeout_seconds: 20
+  user_agent: "job-search-screener/0.1 (personal job search tool)"
+
+storage:
+  results_csv: ./data/results.csv
+  company_cache: ./data/companies.json
+  tailoring_dir: ./data/tailoring

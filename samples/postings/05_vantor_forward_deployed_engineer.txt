@@ -1,0 +1,25 @@
+URL: https://jobs.example.com/vantor/forward-deployed-engineer
+Forward Deployed Engineer — Vantor
+New York, NY — Hybrid (3 days in office)
+
+Vantor builds an AI platform that helps energy utilities predict equipment failures and optimize
+grid maintenance. We raised a $90M Series C last year and serve 30 utilities across the U.S.
+
+As a Forward Deployed Engineer you'll work on-site with utility customers to integrate Vantor with
+their data systems and build custom workflows on top of our platform.
+
+Responsibilities
+- Write production-quality Python and TypeScript to build customer-specific data pipelines and
+  applications
+- Integrate with customer SCADA, asset-management and GIS systems via APIs
+- Debug and deploy models in customer cloud environments (AWS, Azure)
+- Partner with customers' operations teams to scope and prioritize use cases
+
+Requirements
+- BS in Computer Science, Engineering, or a related technical field (required)
+- 3+ years of professional software engineering experience
+- Strong proficiency in Python and SQL; experience with TypeScript/React a plus
+- Experience with cloud infrastructure and data engineering tools (Spark, Airflow)
+- Willingness to travel to customer sites 30%
+
+Base salary range (New York): $175,000 – $220,000 plus equity.

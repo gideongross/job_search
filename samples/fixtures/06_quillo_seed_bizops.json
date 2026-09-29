@@ -1,0 +1,32 @@
+{
+  "extract": {
+    "title": "Founding BizOps Lead",
+    "company": "Quillo",
+    "company_website": null,
+    "locations": [
+      {
+        "location": "New York, NY",
+        "arrangement": "onsite"
+      }
+    ],
+    "salary_min": 120000,
+    "salary_max": 135000,
+    "salary_text": "$120,000 \u2013 $135,000",
+    "seniority": "Mid (3+ years)",
+    "key_requirements": [
+      "3+ years in consulting, BizOps or startup ops",
+      "Comfort with ambiguity"
+    ],
+    "red_flags": [
+      "Seed stage, 6-person team",
+      "Generalist scope incl. HR/legal admin"
+    ],
+    "requires_coding": false,
+    "cs_degree_required": false,
+    "technical_evidence": [],
+    "ai_core": "yes",
+    "ai_evidence": "Quillo is building AI copilots for procurement teams",
+    "funding_stage": "seed",
+    "funding_evidence": "just closed a $3M seed round"
+  }
+}
