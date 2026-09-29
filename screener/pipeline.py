@@ -4,10 +4,13 @@ from __future__ import annotations
 import re
 
 from . import prompts
+from .company import CompanyResolver, company_from_posting, needs_lookup
 from .config import Config
 from .filters import run_filters
-from .models import CompanyInfo, Extraction, FitAssessment, Posting, ScreenResult
+from .models import Extraction, FitAssessment, Posting, ScreenResult
 from .scoring import recommend, total_score
+
+COMPANY_RULES = {"ai_core", "funding_stage"}
 
 
 def company_title_key(company: str, title: str) -> str:
@@ -15,19 +18,12 @@ def company_title_key(company: str, title: str) -> str:
     return f"{norm(company)}|{norm(title)}"
 
 
-def company_from_posting(ex: Extraction) -> CompanyInfo:
-    info = CompanyInfo()
-    if ex.funding_stage != "unknown":
-        info.funding_stage, info.funding_source, info.funding_evidence = ex.funding_stage, "posting", ex.funding_evidence
-    if ex.ai_core != "unknown":
-        info.ai_core, info.ai_source, info.ai_evidence = ex.ai_core, "posting", ex.ai_evidence
-    return info
-
-
 class Screener:
-    def __init__(self, cfg: Config, llm, resume_text: str):
+    def __init__(self, cfg: Config, llm, resume_text: str, lookup: bool = True):
         self.cfg = cfg
         self.llm = llm
+        self.lookup_enabled = lookup and cfg.company_lookup.enabled
+        self.companies = CompanyResolver(cfg.company_lookup, llm, cfg.resolve(cfg.storage.company_cache))
         self.extract_system = prompts.extraction_system(cfg)
         self.candidate_system = prompts.candidate_system(cfg, resume_text)
 
@@ -36,13 +32,17 @@ class Screener:
                               user=prompts.extraction_user(posting.text),
                               schema=Extraction, fixture_key=posting.fixture_key)
 
-    def resolve_company(self, posting: Posting, ex: Extraction) -> CompanyInfo:
-        return company_from_posting(ex)
-
     def screen(self, posting: Posting, ex: Extraction | None = None) -> ScreenResult:
         ex = ex or self.extract(posting)
-        company = self.resolve_company(posting, ex)
+
+        company = company_from_posting(ex)
         filters = run_filters(self.cfg, ex, company)
+        # Only pay for a web lookup if the posting survives the rules that don't depend on it.
+        other_rules_pass = not any(f.status == "fail" and f.rule not in COMPANY_RULES for f in filters)
+        if self.lookup_enabled and other_rules_pass and needs_lookup(company):
+            company = self.companies.resolve(posting, ex)
+            filters = run_filters(self.cfg, ex, company)
+
         flags = [f.detail for f in filters if f.status == "unverified"]
         passed = not any(f.status == "fail" for f in filters)
 
