@@ -1,0 +1,158 @@
+id,url,text
+01_halden_deployment_strategist,https://jobs.example.com/halden-systems/deployment-strategist,"Deployment Strategist — Halden Systems
+New York, NY (Hybrid, 3 days/week in our Flatiron office)
+
+About Halden
+Halden Systems builds AI software that helps the U.S. defense industrial base plan production and
+manage supplier risk. Our platform uses machine learning models to forecast part shortages and
+recommend mitigation across thousands of suppliers. We're a Series C company backed by leading
+defense and enterprise investors, working with the Army, Navy and prime contractors.
+
+The role
+Deployment Strategists are the bridge between our customers' hardest operational problems and our
+product. You'll embed with program offices and manufacturing customers, scope their problems, design
+the deployment, and drive adoption with senior stakeholders. You will not write code — you'll work
+alongside our Forward Deployed Engineers, who own the technical integration.
+
+What you'll do
+- Own the end-to-end deployment of Halden at 3–5 customer accounts
+- Run discovery with program managers, supply-chain leads and executives; translate needs into
+  deployment plans and success metrics
+- Lead change management and executive business reviews
+- Feed customer insight to product and help shape the roadmap
+- Support proposal and contracting work for new government programs
+
+What we're looking for
+- 5+ years in management consulting, strategy & operations, or customer deployment roles
+- Experience working with government, defense or industrial customers
+- Excellent written and executive communication
+- Comfort with data: SQL or spreadsheet analysis is a plus
+- Ability to obtain a U.S. security clearance
+
+Compensation
+The base salary range for this role in New York is $170,000–$210,000, plus equity and benefits.
+Travel to customer sites up to 25%."
+02_ledgerline_strategy_ops,https://jobs.example.com/ledgerline/strategy-operations-lead,"Strategy & Operations Lead — Ledgerline (NYSE: LDGR)
+New York, NY · Hybrid
+
+Ledgerline builds AI agents that automate regulatory compliance for banks and insurers — from
+monitoring rule changes to drafting regulatory filings. Our models are deployed at more than 200
+financial institutions. Ledgerline is a publicly traded company headquartered in New York.
+
+About the role
+Reporting to the Chief Operating Officer, you'll join a small Strategy & Operations team that runs
+the company's planning process and leads cross-functional strategic initiatives.
+
+Responsibilities
+- Run the annual and quarterly planning process and the executive operating cadence
+- Lead 2–3 strategic initiatives at a time (e.g. entering a new regulatory vertical, go-to-market
+  expansion, operating model changes)
+- Build business cases and financial models to support executive decisions
+- Partner with Finance, Product, and Sales leadership to track company goals and KPIs
+- Prepare board and executive materials
+
+Qualifications
+- 6+ years of experience in strategy consulting, corporate strategy, or BizOps
+- Strong financial modeling and analytical skills (Excel/Sheets; SQL a plus)
+- Track record leading cross-functional programs to completion
+- Experience in financial services, compliance, or regulated industries preferred
+- Bachelor's degree required; MBA or MPP a plus
+
+Pay
+Base salary range: $165,000 – $195,000. Eligible for annual bonus and RSUs."
+03_corvid_bizops,https://jobs.example.com/corvid-freight/business-operations-manager,"Business Operations Manager — Corvid Freight
+New York, NY (in office, Monday–Thursday)
+
+Corvid Freight is a digital freight brokerage connecting shippers with carriers across North America.
+We use technology and machine learning to price loads and match trucks, and our marketplace moves
+thousands of shipments every week.
+
+We're looking for a Business Operations Manager to help our brokerage team scale. You'll sit in the
+operations org and work with carrier sales, pricing and customer success.
+
+What you'll do
+- Own weekly operating metrics for the brokerage floor (margin per load, tender acceptance, on-time %)
+- Identify process bottlenecks and run improvement projects
+- Build dashboards and ad-hoc analyses in SQL and Excel
+- Support carrier sales leadership with territory planning and headcount models
+- Manage special projects for the VP of Operations
+
+What you bring
+- 3–5 years in operations, BizOps, or consulting, ideally in logistics or a marketplace business
+- Strong SQL and Excel skills
+- Comfort in a fast-paced, high-volume environment
+- Freight brokerage experience strongly preferred
+
+Competitive salary and benefits. Some evening coverage during peak season."
+04_arbiter_remote_initiatives,https://jobs.example.com/arbiter-ai/strategic-initiatives-manager,"Strategic Initiatives Manager — Arbiter AI
+Remote (United States)
+
+Arbiter AI builds large-language-model software that helps state and local governments process
+permits and benefits applications faster. We're a Series B company serving 40+ public agencies.
+
+We are a fully remote company with no offices; the team gathers in person twice a year.
+
+About the role
+Reporting to the Chief of Staff, you'll lead high-priority strategic initiatives across the business:
+public-sector go-to-market planning, partnership strategy with systems integrators, and internal
+operating improvements.
+
+You will
+- Scope and lead cross-functional initiatives from problem definition through execution
+- Build business cases, market sizing and financial models
+- Drive the quarterly OKR process and exec reporting
+- Coordinate with state and local government partners on pilot programs
+
+You have
+- 5+ years in strategy consulting, strategy & operations, or government
+- Experience selling to or working in the public sector
+- Excellent writing and executive presence
+
+Compensation: $160,000 – $190,000 base (U.S. national range) plus equity."
+05_vantor_forward_deployed_engineer,https://jobs.example.com/vantor/forward-deployed-engineer,"Forward Deployed Engineer — Vantor
+New York, NY — Hybrid (3 days in office)
+
+Vantor builds an AI platform that helps energy utilities predict equipment failures and optimize
+grid maintenance. We raised a $90M Series C last year and serve 30 utilities across the U.S.
+
+As a Forward Deployed Engineer you'll work on-site with utility customers to integrate Vantor with
+their data systems and build custom workflows on top of our platform.
+
+Responsibilities
+- Write production-quality Python and TypeScript to build customer-specific data pipelines and
+  applications
+- Integrate with customer SCADA, asset-management and GIS systems via APIs
+- Debug and deploy models in customer cloud environments (AWS, Azure)
+- Partner with customers' operations teams to scope and prioritize use cases
+
+Requirements
+- BS in Computer Science, Engineering, or a related technical field (required)
+- 3+ years of professional software engineering experience
+- Strong proficiency in Python and SQL; experience with TypeScript/React a plus
+- Experience with cloud infrastructure and data engineering tools (Spark, Airflow)
+- Willingness to travel to customer sites 30%
+
+Base salary range (New York): $175,000 – $220,000 plus equity."
+06_quillo_seed_bizops,https://jobs.example.com/quillo/founding-bizops,"Founding BizOps Lead — Quillo
+New York, NY (in-person, SoHo)
+
+Quillo is building AI copilots for procurement teams at mid-sized manufacturers. We're a 6-person
+team that just closed a $3M seed round led by top-tier investors, and we're hiring our first
+business hire.
+
+You'll work directly with our two co-founders on everything that isn't engineering: customer
+onboarding, pricing, finance, hiring, and investor updates. This is a true generalist role — expect
+to wear many hats.
+
+What you'll do
+- Own customer onboarding for our first 10 design partners
+- Set up our finance, legal and HR operations
+- Build our pricing model and sales pipeline tracking
+- Help prepare for our Series A raise
+
+You might be a fit if
+- You have 3+ years in consulting, BizOps or operations at a startup
+- You're comfortable with ambiguity and scrappy execution
+- You're excited about manufacturing and supply chain
+
+Base salary: $120,000 – $135,000 + meaningful equity (0.5–1.0%)."

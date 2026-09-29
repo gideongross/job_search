@@ -1,6 +1,7 @@
 """Command-line interface: `python -m screener --help`."""
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 from typing import Optional
 
@@ -66,3 +67,44 @@ def text(file: Optional[Path] = typer.Argument(None, help="File with the posting
     except (OSError, ValueError) as e:
         _fail(str(e))
     _screen_one(posting)
+
+
+@app.command()
+def url(link: str = typer.Argument(..., help="URL of a single job posting")):
+    """Fetch a posting URL and screen it. Falls back to asking you to paste the text."""
+    cfg = load_config(state.config)
+    try:
+        posting = ingest.from_url(link, cfg.fetch)
+    except ingest.FetchError as e:
+        report.console.print(f"[yellow]{e}[/]")
+        if not sys.stdin.isatty():
+            _fail("Can't prompt for pasted text (stdin is not a terminal). Save the text and use `text FILE`.")
+        try:
+            posting = ingest.from_text(ingest.read_pasted("Paste the posting text instead, then Ctrl-D:"),
+                                       source=link)
+        except ValueError as e2:
+            _fail(str(e2))
+        posting.url = link
+    _screen_one(posting)
+
+
+@app.command()
+def batch(path: Path = typer.Argument(..., exists=True, help="A CSV file or a folder of saved postings")):
+    """Screen many postings from a CSV (text/description column) or a folder of .txt/.md/.html files."""
+    try:
+        postings = ingest.from_path(path)
+        screener = build_screener()
+    except (LLMError, OSError, ValueError) as e:
+        _fail(str(e))
+    results, errors = [], []
+    with report.console.status("") as status:
+        for i, p in enumerate(postings, 1):
+            status.update(f"Screening {i}/{len(postings)}: {p.source}")
+            try:
+                results.append(screener.screen(p))
+            except (LLMError, ValueError) as e:
+                errors.append((p.source, str(e)))
+    if results:
+        report.print_table(results)
+    for source, err in errors:
+        report.console.print(f"[red]✘ {source}:[/] {err}")
